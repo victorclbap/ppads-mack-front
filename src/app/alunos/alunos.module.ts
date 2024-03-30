@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 
 import { AlunosRoutingModule } from './alunos-routing.module';
 import { AlunosComponent } from './alunos.component';
-import { ReactiveFormsModule } from '@angular/forms';
-import { PoModule } from '@po-ui/ng-components';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { PoButtonModule, PoModule } from '@po-ui/ng-components';
 import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
@@ -16,6 +16,9 @@ import { SharedModule } from '../shared/shared.module';
     CommonModule,
     PoModule,
     SharedModule,
+    ReactiveFormsModule,
+    FormsModule,
+    PoButtonModule
   ],
   exports: [AlunosComponent],
 })

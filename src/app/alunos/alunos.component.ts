@@ -1,7 +1,19 @@
-import { Component } from '@angular/core';
-import { PoTableColumn, PoTableLiterals } from '@po-ui/ng-components';
-import { Subject } from 'rxjs';
-import { FormControl } from '@angular/forms';
+import { Component, ViewChild } from '@angular/core';
+import {
+  PoModalComponent,
+  PoNotificationService,
+  PoTableColumn,
+  PoTableLiterals,
+} from '@po-ui/ng-components';
+import { Subject, takeUntil } from 'rxjs';
+import {
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import { AlunosService } from '../shared/services/alunos/alunos.service';
+import { UtilService } from '../shared/services/util/util.service';
 
 @Component({
   selector: 'app-alunos',
@@ -9,6 +21,16 @@ import { FormControl } from '@angular/forms';
   styleUrls: ['./alunos.component.scss'],
 })
 export class AlunosComponent {
+  formAdicionarAluno!: FormGroup;
+
+  public readonly pageActions = [
+    {
+      label: 'Novo aluno',
+      icon: 'po-icon po-icon-plus',
+      action: () => this.adicionarNovoAluno(),
+    },
+  ];
+
   // Form
   public searchField = new FormControl();
 
@@ -22,9 +44,9 @@ export class AlunosComponent {
   private destroy$ = new Subject<boolean>();
 
   // Tabela
-  public listEpisodes: any[] = [];
-  public clonedListEpisodes: any[] = [];
-  public columnsEpisodes: PoTableColumn[] = [];
+  public listAlunos: any[] = [];
+  public clonedListAlunos: any[] = [];
+  public columnsAlunos: PoTableColumn[] = [];
 
   // Loading
   public showMoreDisabled = false;
@@ -41,29 +63,42 @@ export class AlunosComponent {
   ];
 
   public turmas: any[] = [
-    { label: 'Turma A', value: 'a' },
-    { label: 'Turma B', value: 'b' },
-    { label: 'Turma C', value: 'c' },
+    { label: '5A', value: 'a' },
+    { label: '5B', value: 'b' },
+    { label: '6A', value: 'c' },
+    { label: '6B', value: 'd' },
   ];
 
   public disciplinas: any[] = [
-    { label: 'Matemática', value: 'Mat' },
-    { label: 'Física', value: 'Fis' },
-    { label: 'Química', value: 'Quim' },
+    { label: 'Matemática', value: 'mat' },
+    { label: 'Física', value: 'fis' },
+    { label: 'Química', value: 'qui' },
+    { label: 'Geografia', value: 'geo' },
+    { label: 'Inglês', value: 'ing' },
+    { label: 'Artes', value: 'art' },
+    { label: 'Ciências', value: 'cie' },
   ];
 
   public alunos: any[] = [
-    { label: 'José', value: 'J' },
-    { label: 'Victor', value: 'V' },
-    { label: 'João', value: 'J' },
+    { label: 'João Silva', value: 'J' },
+    { label: 'Maria Oliveira', value: 'M' },
+    { label: 'Pedro Santos', value: 'P' },
   ];
 
-  public periodo: any[] = [
-    { label: 'Manhã', value: 'M' },
-    { label: 'Tarde', value: 'T' },
-  ];
+  aluno = {
+    nome_aluno: '',
+    turma: '',
+    responsavel: '',
+  };
 
-  constructor() {}
+  constructor(
+    private alunosService: AlunosService,
+    private utilService: UtilService,
+    private fb: FormBuilder,
+    private notificationService: PoNotificationService
+  ) {}
+
+  @ViewChild(PoModalComponent, { static: true }) modal!: PoModalComponent;
 
   ngOnInit(): void {
     this.initializeData();
@@ -73,35 +108,35 @@ export class AlunosComponent {
    * Inicialização dos dados
    */
   private initializeData(): void {
+    this.createForm();
     this.setEpisodesColumns();
-    this.getEpisodes();
+    this.getAlunos();
   }
 
   /**
    * Obtêm os apisódios
    */
-  public getEpisodes(): void {
-    this.listEpisodes = this.getItems();
-    // this.isLoading = true;
+  public getAlunos(): void {
+    this.listAlunos = this.getItems();
+    this.isLoading = true;
 
-    // this.episodesService
-    //   .getAllEpisodes()
-    //   .pipe(takeUntil(this.destroy$))
-    //   .subscribe({
-    //     next: (response) => {
-    //       const episodes = this.addViewDetails(response.results);
-    //       this.listEpisodes  = this.getItems()
-    //     },
-    //     error: (error) => this.utilService.handleApiError(error),
-    //     complete: () => (this.isLoading = false),
-    //   });
+    this.alunosService
+      .obterTodosAlunos()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          this.listAlunos = response;
+        },
+        error: (error) => this.utilService.handleApiError(error),
+        complete: () => (this.isLoading = false),
+      });
   }
 
   /**
    * Seta as colunas da tabela
    */
   public setEpisodesColumns(): void {
-    this.columnsEpisodes = this.getColumns();
+    this.columnsAlunos = this.getColumns();
   }
 
   /**
@@ -111,12 +146,17 @@ export class AlunosComponent {
   public getColumns(): PoTableColumn[] {
     return [
       { property: 'id', label: 'Id', width: '22%', visible: false },
-      { property: 'nome', label: 'Nome', width: '22%' },
-      { property: 'presenca', label: 'Presença', width: '22%' },
-      { property: 'faltas', label: 'Falta', width: '22%' },
+      { property: 'nome_aluno', label: 'Nome', width: '22%' },
+      { property: 'turma', label: 'Turma', width: '12%' },
+      { property: 'responsavel', label: 'Responsável', width: '22%' },
       {
-        property: 'porcentagem_falta',
-        label: 'Porcentagem de Falta',
+        property: 'nome_materia',
+        label: 'Matéria',
+        width: '22%',
+      },
+      {
+        property: 'nome_professor',
+        label: 'Nome do Professor',
         width: '22%',
       },
     ];
@@ -151,5 +191,47 @@ export class AlunosComponent {
         porcentagem_falta: '20%',
       },
     ];
+  }
+
+  createForm() {
+    this.formAdicionarAluno = this.fb.group({
+      nome_aluno: ['', Validators.required],
+      turma: ['', Validators.required],
+      responsavel: ['', Validators.required],
+    });
+  }
+
+  public adicionarNovoAluno() {
+    this.modal.open();
+  }
+
+  public fechar() {
+    this.modal.close();
+  }
+
+  public confirmar() {
+    if (this.formAdicionarAluno.invalid) {
+      return this.notificationService.warning('Formulário inválido!');
+    }
+
+    this.isLoading = true;
+
+    this.alunosService
+      .criarAluno(this.formAdicionarAluno.value)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          if (response) {
+            this.notificationService.success('Aluno criado com sucesso!');
+            this.formAdicionarAluno.reset();
+            this.modal.close();
+            this.getAlunos();
+          } else {
+            this.notificationService.success('Houve um erro na criação');
+          }
+        },
+        error: (error) => this.utilService.handleApiError(error),
+        complete: () => (this.isLoading = false),
+      });
   }
 }
