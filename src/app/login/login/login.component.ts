@@ -43,7 +43,7 @@ export class LoginComponent implements OnInit {
   public login(): void {
     if (!this.isValidForm()) {
       this.utilService.showWarningNotification(
-        'Please enter a username and password'
+        'Por gentileza, entre uma senha e um usuário!'
       );
       return;
     }
@@ -63,7 +63,7 @@ export class LoginComponent implements OnInit {
       this.handleSuccessfulLogin();
     } else {
       this.utilService.showWarningNotification(
-        'Incorrect username or password'
+        'Senha ou usuário incorreto!'
       );
     }
   }
