@@ -9,7 +9,7 @@ import { PoBreadcrumb, PoPageEditLiterals } from '@po-ui/ng-components';
 })
 export class ProfileComponent implements OnInit {
   // Página
-  public readonly customLiterals: PoPageEditLiterals = { cancel: 'Cancel' };
+  public readonly customLiterals: PoPageEditLiterals = { cancel: 'Cancelar' };
   public readonly breadcrumb: PoBreadcrumb = {
     items: [
       { label: 'Home', action: () => this.navigateTo('professores') },

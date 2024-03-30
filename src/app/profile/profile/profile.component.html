@@ -1,5 +1,5 @@
 <po-page-edit
-  p-title="Profile"
+  p-title="Perfil"
   [p-breadcrumb]="breadcrumb"
   (p-cancel)="cancel()"
   [p-literals]="customLiterals"
@@ -14,7 +14,7 @@
   >
     <img
       src="../../../assets/images/profile.jpg"
-      alt="Profile"
+      alt="Perfil"
       width="200"
       height="200"
       style="border-radius: 50%"
@@ -27,7 +27,7 @@
         name="userId"
         [(ngModel)]="userId"
         p-clean
-        p-label="User ID"
+        p-label="ID do Usuário"
         p-required
         p-disabled
       >
@@ -49,7 +49,7 @@
         name="name"
         [(ngModel)]="name"
         p-clean
-        p-label="Name"
+        p-label="Nome"
         p-required
         p-disabled
       >
@@ -63,7 +63,7 @@
         name="birthDate"
         [(ngModel)]="birthDate"
         p-clean
-        p-label="Birth Date"
+        p-label="Data de Nascimento"
         p-disabled
       >
       </po-datepicker>
@@ -73,7 +73,7 @@
         name="genre"
         [(ngModel)]="genre"
         p-clean
-        p-label="Genre"
+        p-label="Gênero"
         p-disabled
       >
       </po-input>
@@ -82,7 +82,7 @@
       name="nationality"
       [(ngModel)]="nationality"
       p-clean
-      p-label="Nationality"
+      p-label="Nacionalidade"
       p-disabled
     >
     </po-input>
