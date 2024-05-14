@@ -6,9 +6,10 @@ import { AlunosComponent } from './alunos.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { PoButtonModule, PoModule } from '@po-ui/ng-components';
 import { SharedModule } from '../shared/shared.module';
+import { PresencasComponent } from './presencas/presencas.component';
 
 @NgModule({
-  declarations: [AlunosComponent],
+  declarations: [AlunosComponent, PresencasComponent],
   imports: [
     CommonModule,
     AlunosRoutingModule,
@@ -18,8 +19,8 @@ import { SharedModule } from '../shared/shared.module';
     SharedModule,
     ReactiveFormsModule,
     FormsModule,
-    PoButtonModule
+    PoButtonModule,
   ],
-  exports: [AlunosComponent],
+  exports: [AlunosComponent, PresencasComponent],
 })
 export class AlunosModule {}

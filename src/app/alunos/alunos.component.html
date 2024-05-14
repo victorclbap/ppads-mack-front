@@ -34,11 +34,16 @@
     [p-items]="listAlunos"
     [p-literals]="customLiterals"
     [p-sort]="true"
+    [p-selectable]="true"
+    [p-single-select]="true"
   >
   </po-table>
 </po-page-default>
 
-<po-modal #modal p-title="Adicionar novo aluno">
+<po-modal
+  #modal
+  [p-title]="this.isEditarAluno ? 'Editar Aluno' : 'Adicionar Novo Aluno'"
+>
   <form [formGroup]="formAdicionarAluno">
     <div class="po-row">
       <po-input
@@ -68,6 +73,14 @@
         p-clean
         p-icon="po-icon po-icon-waiter"
         p-label="Responsável"
+      >
+      </po-input>
+      <po-input
+        class="po-md-12"
+        formControlName="email_responsavel"
+        p-clean
+        p-icon="po-icon po-icon-mail"
+        p-label="E-mail do Responsável"
       >
       </po-input>
     </div>

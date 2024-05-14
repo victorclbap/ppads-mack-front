@@ -14,6 +14,7 @@ import {
 } from '@angular/forms';
 import { AlunosService } from '../shared/services/alunos/alunos.service';
 import { UtilService } from '../shared/services/util/util.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-alunos',
@@ -29,6 +30,16 @@ export class AlunosComponent {
       icon: 'po-icon po-icon-plus',
       action: () => this.adicionarNovoAluno(),
     },
+    {
+      label: 'Editar aluno',
+      icon: 'po-icon po-icon-edit',
+      action: () => this.editarAluno(),
+    },
+    {
+      label: 'Presenças',
+      icon: 'po-icon po-icon-edit',
+      action: () => this.navegarParaPresencas(),
+    },
   ];
 
   // Form
@@ -42,6 +53,7 @@ export class AlunosComponent {
 
   // Util
   private destroy$ = new Subject<boolean>();
+  public isEditarAluno = false;
 
   // Tabela
   public listAlunos: any[] = [];
@@ -95,7 +107,8 @@ export class AlunosComponent {
     private alunosService: AlunosService,
     private utilService: UtilService,
     private fb: FormBuilder,
-    private notificationService: PoNotificationService
+    private notificationService: PoNotificationService,
+    private router: Router
   ) {}
 
   @ViewChild(PoModalComponent, { static: true }) modal!: PoModalComponent;
@@ -114,10 +127,9 @@ export class AlunosComponent {
   }
 
   /**
-   * Obtêm os apisódios
+   * Obtêm os alunos
    */
   public getAlunos(): void {
-    this.listAlunos = this.getItems();
     this.isLoading = true;
 
     this.alunosService
@@ -167,41 +179,31 @@ export class AlunosComponent {
     this.destroy$.complete();
   }
 
-  getItems(): Array<any> {
-    return [
-      {
-        id: 1,
-        nome: 'Aluno 1',
-        presenca: 'Confirmada',
-        faltas: '5',
-        porcentagem_falta: '30%',
-      },
-      {
-        id: 2,
-        nome: 'Aluno 2',
-        presenca: 'Confirmada',
-        faltas: '2',
-        porcentagem_falta: '10%',
-      },
-      {
-        id: 3,
-        nome: 'Aluno 3',
-        presenca: 'Confirmada',
-        faltas: '3',
-        porcentagem_falta: '20%',
-      },
-    ];
-  }
 
   createForm() {
     this.formAdicionarAluno = this.fb.group({
+      id: [''],
       nome_aluno: ['', Validators.required],
       turma: ['', Validators.required],
       responsavel: ['', Validators.required],
+      email_responsavel: ['', Validators.required],
     });
   }
 
   public adicionarNovoAluno() {
+    this.formAdicionarAluno.reset();
+    this.isEditarAluno = false;
+    this.modal.open();
+  }
+
+  public editarAluno() {
+    const aluno = this.listAlunos.filter((item) => item.$selected);
+    if (!aluno.length) {
+      return this.notificationService.warning('Selecione um aluno!');
+    }
+    this.formAdicionarAluno.reset();
+    this.isEditarAluno = true;
+    this.formAdicionarAluno.patchValue(aluno[0]);
     this.modal.open();
   }
 
@@ -216,22 +218,56 @@ export class AlunosComponent {
 
     this.isLoading = true;
 
-    this.alunosService
-      .criarAluno(this.formAdicionarAluno.value)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
-          if (response) {
-            this.notificationService.success('Aluno criado com sucesso!');
-            this.formAdicionarAluno.reset();
-            this.modal.close();
-            this.getAlunos();
-          } else {
-            this.notificationService.success('Houve um erro na criação');
-          }
-        },
-        error: (error) => this.utilService.handleApiError(error),
-        complete: () => (this.isLoading = false),
-      });
+    if (this.isEditarAluno) {
+      this.alunosService
+        .editarAluno({
+          ...this.formAdicionarAluno.value,
+        })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            if (response) {
+              this.notificationService.success('Aluno editado com sucesso!');
+              this.getAlunos();
+              this.reset();
+            } else {
+              this.notificationService.success('Houve um erro na edição');
+              this.reset();
+            }
+          },
+          error: (error) => {
+            this.utilService.handleApiError(error), this.reset();
+          },
+        });
+    } else {
+      this.alunosService
+        .criarAluno({ ...this.formAdicionarAluno.value })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            if (response) {
+              this.notificationService.success('Aluno criado com sucesso!');
+              this.getAlunos();
+              this.reset();
+            } else {
+              this.notificationService.success('Houve um erro na criação');
+              this.reset();
+            }
+          },
+          error: (error) => {
+            this.utilService.handleApiError(error), this.reset();
+          },
+        });
+    }
+  }
+
+  private reset() {
+    this.formAdicionarAluno.reset();
+    this.modal.close();
+    this.isLoading = false;
+  }
+
+  private navegarParaPresencas() {
+    this.router.navigate(['/alunos/presencas']);
   }
 }

@@ -1,0 +1,44 @@
+<po-page-default p-title="Lista de Presença" [p-actions]="pageActions">
+  <div class="po-row">
+    <div
+      class="po-md-12"
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+      "
+    >
+      <po-input
+        class="po-md-8"
+        p-clean
+        p-icon="po-icon-search"
+        p-label="Turma"
+        p-placeholder="Digite uma turma..."
+        [(ngModel)]="busca"
+        (keyup.enter)="onSearch()"
+      >
+      </po-input>
+      <po-button
+        class="po-md-4"
+        p-label="Buscar"
+        (p-click)="onSearch()"
+        style="margin-top: 23px"
+        p-kind="primary"
+      >
+      </po-button>
+    </div>
+  </div>
+  <po-table
+    [p-hide-columns-manager]="true"
+    p-container="shadow"
+    [p-loading]="isLoading"
+    [p-loading-show-more]="isLoading"
+    [p-show-more-disabled]="showMoreDisabled"
+    [p-columns]="columnsAlunos"
+    [p-items]="listAlunos"
+    [p-literals]="customLiterals"
+    [p-sort]="true"
+  >
+  </po-table>
+</po-page-default>
